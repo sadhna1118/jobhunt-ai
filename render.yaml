@@ -1,0 +1,29 @@
+services:
+  # 1. Backend Service (FastAPI)
+  - type: web
+    name: jobhunt-backend
+    env: python
+    region: singapore # You can change this to your preferred region
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0 # Standard stable version
+      - key: APP_ENV
+        value: production
+      - key: BACKEND_CORS_ORIGINS
+        value: '["https://jobhunt-frontend.onrender.com"]' # Update this later if needed
+      # Note: Add GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET manually in the Render Dashboard
+
+  # 2. Frontend Service (Next.js)
+  - type: web
+    name: jobhunt-frontend
+    env: node
+    region: singapore
+    buildCommand: "cd frontend && npm install && npm run build"
+    startCommand: "cd frontend && npm run start"
+    envVars:
+      - key: NODE_VERSION
+        value: 20.9.0
+      - key: NEXT_PUBLIC_API_URL
+        value: "https://jobhunt-backend.onrender.com/api" # Points to the backend service

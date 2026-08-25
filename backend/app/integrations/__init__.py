@@ -1,0 +1,1 @@
+"""Platform integrations: LinkedIn, Naukri, Internshala, Company career pages."""

@@ -1,0 +1,7 @@
+{
+  "/applications/page": "app/applications/page.js",
+  "/integrations/page": "app/integrations/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/recruiters/page": "app/recruiters/page.js"
+}
