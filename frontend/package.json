@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "startNODE_VERSION": "next start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
