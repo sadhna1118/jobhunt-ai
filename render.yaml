@@ -1,29 +1,92 @@
 services:
-  # 1. Backend Service (FastAPI)
+  # 1. PostgreSQL Database
+  - type: psql
+    name: jobhunt-postgres
+    region: singapore
+    plan: free # Change to starter for production
+    databaseName: jobhunt_ai
+    user: jobhunt_user
+
+  # 2. Redis Cache
+  - type: redis
+    name: jobhunt-redis
+    region: singapore
+    plan: free
+    maxmemoryPolicy: noeviction
+
+  # 3. Backend API
   - type: web
     name: jobhunt-backend
     env: python
-    region: singapore # You can change this to your preferred region
-    buildCommand: "cd backend && pip install -r requirements.txt"
+    region: singapore
+    buildCommand: "cd backend && pip install -r requirements.txt && playwright install chromium --with-deps"
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0 # Standard stable version
+        value: 3.10.0
       - key: APP_ENV
         value: production
-      - key: BACKEND_CORS_ORIGINS
-        value: '["https://jobhunt-frontend.onrender.com"]' # Update this later if needed
-      # Note: Add GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET manually in the Render Dashboard
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jobhunt-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: jobhunt-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: jobhunt-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: jobhunt-redis
+          property: connectionString
 
-  # 2. Frontend Service (Next.js)
+  # 4. Celery Worker (Background tasks)
+  - type: worker
+    name: jobhunt-celery-worker
+    env: python
+    region: singapore
+    buildCommand: "cd backend && pip install -r requirements.txt && playwright install chromium --with-deps"
+    startCommand: "cd backend && celery -A app.core.celery_app worker --loglevel=info --concurrency=2"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jobhunt-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: jobhunt-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: jobhunt-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: jobhunt-redis
+          property: connectionString
+
+  # 5. Frontend UI
   - type: web
     name: jobhunt-frontend
     env: node
     region: singapore
     buildCommand: "cd frontend && npm install && npm run build"
-    startCommand: "cd frontend && npm run start"
+    startCommand: "cd frontend && npm start"
     envVars:
-      - key: NODE_VERSION
-        value: 20.9.0
+      - key: NODE_ENV
+        value: production
       - key: NEXT_PUBLIC_API_URL
-        value: "https://jobhunt-backend.onrender.com/api" # Points to the backend service
+        value: "https://jobhunt-backend.onrender.com"
