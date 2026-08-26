@@ -8,14 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import {
   BarChart3,
-  TrendingUp,
-  PieChart,
-  CheckCircle2,
-  Users2,
-  Briefcase,
   Layers,
-  Award,
-  Zap,
+  Sparkles,
 } from "lucide-react";
 
 export default function AnalyticsPage() {
